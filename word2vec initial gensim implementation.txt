@@ -1,0 +1,37 @@
+import pandas as pd
+import nltk
+nltk.download('punkt')
+import gensim
+
+from bs4 import BeautifulSoup
+import re, string
+
+df = pd.read_csv('unlabeledTrainData.tsv', delimiter = '\t', header = 0, quoting  = 3)
+
+clean = [ ]
+
+#for loop to clean dataset while removing html tags, special characters
+for doc in df['review']:
+    x = doc.lower()                     #lowerthe case
+    x = BeautifulSoup(x, 'lxml').text   #html tag removal
+    x = re.sub('[^A-Za-z0-9]+', ' ', x) #separate words by space
+    clean.append(x)
+
+#assigning clean list to new attribute
+df['clean'] = clean
+doc = clean
+
+doc_vec = [nltk.word_tokenize(review) for review in doc]
+
+model = gensim.models.Word2Vec(doc_vec, 
+                               min_count = 10, 
+                               workers = 4,  
+                               size =50, 
+                               window =5, 
+                               iter =10 )
+
+
+model.most_similar('man')
+model.wv['time']
+
+model.wv.save('word_vector_imdb_kaggle.bin')
